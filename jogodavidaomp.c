@@ -18,7 +18,9 @@ double wall_time(void) {
 void UmaVida(int* tabulIn, int* tabulOut, int tam) {
     int i, j, vizviv;
 
-    #pragma omp parallel for private(vizviv) collapse(2)
+    int num_threads = omp_get_max_threads();
+
+    #pragma omp parallel for private(vizviv) collapse(2) num_threads(num_threads)
     for (i = 1; i <= tam; i++) {
         for (j = 1; j <= tam; j++) {
             vizviv =
