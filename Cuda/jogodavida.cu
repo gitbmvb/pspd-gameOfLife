@@ -82,8 +82,7 @@ void SaveTabulToFile(const char *filename, int *tabul, int tam)
     fclose(f);
 }
 
-int main(void)
-{
+int main(int argc, char * argv[]) {
     for (int pow = POWMIN; pow <= POWMAX; pow++)
     {
         int tam = 1 << pow;
@@ -100,7 +99,9 @@ int main(void)
         cudaMemcpy(d_in, h_in, size, cudaMemcpyHostToDevice);
         cudaMemcpy(d_out, h_out, size, cudaMemcpyHostToDevice);
 
-        dim3 block(16, 16);
+        int block_dim = atoi(argv[1]);
+
+        dim3 block(block_dim, block_dim);
         dim3 grid((tam + block.x - 1) / block.x, (tam + block.y - 1) / block.y);
 
         double t0 = wall_time();
