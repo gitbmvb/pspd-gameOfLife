@@ -16,27 +16,21 @@ double wall_time(void) {
 }
 
 void UmaVida(int* tabulIn, int* tabulOut, int tam) {
-    int i, j, vizviv;
+    int vizviv, num_threads = omp_get_max_threads();
 
-    int num_threads = omp_get_max_threads();
-
-    #pragma omp parallel for private(vizviv) collapse(2) num_threads(num_threads)
-    for (i = 1; i <= tam; i++) {
-        for (j = 1; j <= tam; j++) {
+    #pragma omp parallel for private(vizviv) collapse(2) num_threads(num_threads) schedule(static)
+    for (int i = 1; i <= tam; i++) {
+        for (int j = 1; j <= tam; j++) {
             vizviv =
                 tabulIn[ind2d(i - 1, j - 1)] + tabulIn[ind2d(i - 1, j)] +
                 tabulIn[ind2d(i - 1, j + 1)] + tabulIn[ind2d(i, j - 1)] +
                 tabulIn[ind2d(i, j + 1)] + tabulIn[ind2d(i + 1, j - 1)] +
                 tabulIn[ind2d(i + 1, j)] + tabulIn[ind2d(i + 1, j + 1)];
 
-            if (tabulIn[ind2d(i, j)] && vizviv < 2)
-                tabulOut[ind2d(i, j)] = 0;
-            else if (tabulIn[ind2d(i, j)] && vizviv > 3)
-                tabulOut[ind2d(i, j)] = 0;
-            else if (!tabulIn[ind2d(i, j)] && vizviv == 3)
-                tabulOut[ind2d(i, j)] = 1;
-            else
-                tabulOut[ind2d(i, j)] = tabulIn[ind2d(i, j)];
+            if (tabulIn[ind2d(i, j)] && vizviv < 2) tabulOut[ind2d(i, j)] = 0;
+            else if (tabulIn[ind2d(i, j)] && vizviv > 3) tabulOut[ind2d(i, j)] = 0;
+            else if (!tabulIn[ind2d(i, j)] && vizviv == 3) tabulOut[ind2d(i, j)] = 1;
+            else tabulOut[ind2d(i, j)] = tabulIn[ind2d(i, j)];
         }
     }
 }
@@ -61,9 +55,8 @@ void DumpTabul(int* tabul, int tam, int first, int last, char* msg) {
 }
 
 void InitTabul(int* tabulIn, int* tabulOut, int tam) {
-    int ij;
-
-    for (ij = 0; ij < (tam + 2) * (tam + 2); ij++) {
+    #pragma omp parallel for schedule(static)
+    for (int ij = 0; ij < (tam + 2) * (tam + 2); ij++) {
         tabulIn[ij] = 0;
         tabulOut[ij] = 0;
     }
@@ -76,9 +69,10 @@ void InitTabul(int* tabulIn, int* tabulOut, int tam) {
 }
 
 int Correto(int* tabul, int tam) {
-    int ij, cnt = 0;
+    int cnt = 0;
 
-    for (ij = 0; ij < (tam + 2) * (tam + 2); ij++)
+    #pragma omp parallel for reduction(+:cnt)
+    for (int ij = 0; ij < (tam + 2) * (tam + 2); ij++)
         cnt += tabul[ij];
 
     return (cnt == 5 &&
@@ -104,8 +98,6 @@ int main(void) {
         InitTabul(tabulIn, tabulOut, tam);
         t1 = wall_time();
 
-        // DumpTabul(tabulIn, tam, 0, tam, "Teste");
-
         for (i = 0; i < 2 * (tam - 3); i++) {
             UmaVida(tabulIn, tabulOut, tam);
             UmaVida(tabulOut, tabulIn, tam);
@@ -121,8 +113,6 @@ int main(void) {
 
         printf("tam=%d; tempos: init=%7.7f, comp=%7.7f, fim=%7.7f, tot=%7.7f\n",
                tam, t1 - t0, t2 - t1, t3 - t2, t3 - t0);
-
-        // DumpTabul(tabulOut, tam, 0, tam, "Teste");
 
         free(tabulIn);
         free(tabulOut);

@@ -2,7 +2,7 @@
 
 SOURCE_FILE="jogodavidampi.c"
 EXECUTABLE="jogo_mpi"
-LOG_FILE="resultados_mpi.txt"
+LOG_FILE="output.txt"
 
 PROCESS_LIST=(1 2 4 8)
 
