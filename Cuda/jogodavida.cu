@@ -99,7 +99,7 @@ int main(int argc, char * argv[]) {
         cudaMemcpy(d_in, h_in, size, cudaMemcpyHostToDevice);
         cudaMemcpy(d_out, h_out, size, cudaMemcpyHostToDevice);
 
-        int block_dim = atoi(argv[1]);
+        int block_dim = argc > 1 ? atoi(argv[1]) : 16;
 
         dim3 block(block_dim, block_dim);
         dim3 grid((tam + block.x - 1) / block.x, (tam + block.y - 1) / block.y);
